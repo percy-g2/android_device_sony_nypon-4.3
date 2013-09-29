@@ -6,7 +6,6 @@ $(INSTALLED_BOOTIMAGE_TARGET): $(PRODUCT_OUT)/kernel $(recovery_ramdisk) $(INSTA
 	$(call pretty,"Boot image: $@")
 	$(hide) mkdir -p $(PRODUCT_OUT)/combinedroot/
 	$(hide) cp -R $(PRODUCT_OUT)/root/* $(PRODUCT_OUT)/combinedroot/
-	$(hide) cp -R $(PRODUCT_OUT)/../../../../bootable/recovery/res/images/* $(PRODUCT_OUT)/combinedroot/res/images/
 	$(hide) cp -R $(PRODUCT_OUT)/../../../../device/sony/nypon/config/root/default.prop $(PRODUCT_OUT)/combinedroot/
 	$(hide) cp -R $(PRODUCT_OUT)/recovery/root/sbin/* $(PRODUCT_OUT)/combinedroot/sbin/
 	$(hide) $(MKBOOTFS) $(PRODUCT_OUT)/combinedroot/ > $(PRODUCT_OUT)/combinedroot.cpio
