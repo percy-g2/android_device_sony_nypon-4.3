@@ -16,6 +16,8 @@
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 
+$(call inherit-product, device/sony/nypon/recovery/recovery.mk)
+
 # Inherit the proprietary counterpart
 $(call inherit-product-if-exists, vendor/sony/nypon/nypon-vendor.mk)
 
