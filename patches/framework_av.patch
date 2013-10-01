@@ -8,9 +8,11 @@
 #       modified:   include/media/IAudioPolicyService.h
 #       modified:   include/media/stagefright/ColorConverter.h
 #       modified:   include/media/stagefright/OMXCodec.h
+#       modified:   include/private/media/AudioTrackShared.h
 #       modified:   media/libmedia/AudioParameter.cpp
 #       modified:   media/libmedia/AudioRecord.cpp
 #       modified:   media/libmedia/AudioSystem.cpp
+#       modified:   media/libmedia/AudioTrack.cpp
 #       modified:   media/libmedia/IAudioFlinger.cpp
 #       modified:   media/libmedia/IAudioPolicyService.cpp
 #       modified:   media/libstagefright/ACodec.cpp
@@ -23,6 +25,9 @@
 #       modified:   services/audioflinger/AudioFlinger.h
 #       modified:   services/audioflinger/AudioPolicyService.cpp
 #       modified:   services/audioflinger/AudioPolicyService.h
+#       modified:   services/audioflinger/Effects.h
+#       modified:   services/audioflinger/Threads.cpp
+#       modified:   services/audioflinger/Threads.h
 diff --git a/frameworks/av/camera/CameraParameters.cpp b/frameworks/av/camera/CameraParameters.cpp
 index 42b2334..54fabbb 100644
 --- a/frameworks/av/camera/CameraParameters.cpp
@@ -59,7 +64,7 @@ index 42b2334..54fabbb 100644
  // Values for light fx settings
  const char CameraParameters::LIGHTFX_LOWLIGHT[] = "low-light";
 diff --git a/frameworks/av/include/camera/CameraParameters.h b/frameworks/av/include/camera/CameraParameters.h
-index 4c08ece..32ee0f7 100644
+index 4c08ece..c7a3949 100644
 --- a/frameworks/av/include/camera/CameraParameters.h
 +++ b/frameworks/av/include/camera/CameraParameters.h
 @@ -850,8 +850,18 @@ public:
@@ -354,6 +359,31 @@ index 22d790e..dffd72b 100644
      };
  
      struct CodecNameAndQuirks {
+diff --git a/frameworks/av/include/private/media/AudioTrackShared.h b/frameworks/av/include/private/media/AudioTrackShared.h
+index 41e20f8..1e96458 100644
+--- a/frameworks/av/include/private/media/AudioTrackShared.h
++++ b/frameworks/av/include/private/media/AudioTrackShared.h
+@@ -71,6 +71,11 @@ struct audio_track_cblk_t
+                 uint32_t    userBase;
+                 uint32_t    serverBase;
+
++                // if there is a shared buffer, "buffers" is the value of pointer() for the shared
++                // buffer, otherwise "buffers" points immediately after the control block
++                void*       buffers;
++                uint32_t    frameCount;
++
+                 int         mPad1;          // unused, but preserves cache line alignment
+
+                 size_t      frameCount_;    // used during creation to pass actual track buffer size
+@@ -97,6 +102,8 @@ private:
+                 uint8_t     mPad2;           // unused
+
+ public:
++                uint32_t    sampleRate;
++
+                 // read-only for client, server writes once at initialization and is then read-only
+                 uint8_t     mName;           // normal tracks: track name, fast tracks: track index
+
 diff --git a/frameworks/av/media/libmedia/AudioParameter.cpp b/frameworks/av/media/libmedia/AudioParameter.cpp
 index 18fcca4..e6be77c 100644
 --- a/frameworks/av/media/libmedia/AudioParameter.cpp
@@ -551,6 +581,48 @@ index d950450..1a9ab23 100644
  }
  
  status_t AudioSystem::startInput(audio_io_handle_t input)
+diff --git a/frameworks/av/media/libmedia/AudioTrack.cpp b/frameworks/av/media/libmedia/AudioTrack.cpp
+index 8d066ac..6f99fb3 100644
+--- a/frameworks/av/media/libmedia/AudioTrack.cpp
++++ b/frameworks/av/media/libmedia/AudioTrack.cpp
+@@ -179,6 +179,9 @@ AudioTrack::~AudioTrack()
+     ALOGV_IF(mSharedBuffer != 0, "Destructor sharedBuffer: %p", mSharedBuffer->pointer());
+
+     if (mStatus == NO_ERROR) {
++#ifdef STE_AUDIO
++        AudioSystem::unregisterLatencyNotificationClient(mLatencyClientId);
++#endif
+         // Make sure that callback function exits in the case where
+         // it is looping on buffer full condition in obtainBuffer().
+         // Otherwise the callback thread will never exit.
+@@ -1095,6 +1098,11 @@ status_t AudioTrack::createTrack_l(
+         // Force buffer full condition as data is already present in shared memory
+         mProxy->stepUser(frameCount);
+     }
++#ifdef STE_AUDIO
++    if (mLatencyClientId != -1) {
++        AudioSystem::unregisterLatencyNotificationClient(mLatencyClientId);
++    }
++#endif
+
+     return NO_ERROR;
+ }
+@@ -1670,6 +1678,15 @@ status_t AudioTrack::getTimeStamp(uint64_t *tstamp) {
+     return NO_ERROR;
+ }
+ #endif
++
++#ifdef STE_AUDIO
++// static
++void AudioTrack::LatencyCallback(void *cookie, audio_io_handle_t output, uint32_t sinkLatency)
++{
++    AudioTrack *me = static_cast<AudioTrack *>(cookie);
++    me->mLatency = sinkLatency + (1000*me->mCblk->frameCount) / me->mCblk->sampleRate;
++}
++#endif
+ // =========================================================================
+
+ AudioTrack::AudioTrackThread::AudioTrackThread(AudioTrack& receiver, bool bCanCallJava)
 diff --git a/frameworks/av/media/libmedia/IAudioFlinger.cpp b/frameworks/av/media/libmedia/IAudioFlinger.cpp
 index 08942f1..916cf52 100644
 --- a/frameworks/av/media/libmedia/IAudioFlinger.cpp
@@ -1144,7 +1216,7 @@ index b3fe98e..1806547 100644
      { "OMX.google.vorbis.decoder", "vorbisdec", "audio_decoder.vorbis" },
      { "OMX.google.vpx.decoder", "vpxdec", "video_decoder.vpx" },
 diff --git a/frameworks/av/services/audioflinger/AudioFlinger.cpp b/frameworks/av/services/audioflinger/AudioFlinger.cpp
-index 84e2498..9e0fe04 100644
+index 84e2498..7dc813b 100644
 --- a/frameworks/av/services/audioflinger/AudioFlinger.cpp
 +++ b/frameworks/av/services/audioflinger/AudioFlinger.cpp
 @@ -1235,6 +1235,20 @@ unsigned int AudioFlinger::getInputFramesLost(audio_io_handle_t ioHandle) const
@@ -1271,7 +1343,29 @@ index 84e2498..9e0fe04 100644
          reqFormat == config.format && config.format == AUDIO_FORMAT_PCM_16_BIT &&
          (config.sample_rate <= 2 * reqSamplingRate) &&
          (getInputChannelCount(config.channel_mask) <= FCC_2) && (getInputChannelCount(reqChannels) <= FCC_2)) {
-@@ -2123,6 +2197,12 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
+@@ -2106,13 +2180,21 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
+         // Start record thread
+         // RecorThread require both input and output device indication to forward to audio
+         // pre processing modules
++#ifdef STE_AUDIO
++        audio_devices_t device = (*pDevices) | primaryOutputDevice_l();
++#endif
+         thread = new RecordThread(this,
+                                   input,
+                                   reqSamplingRate,
+                                   reqChannels,
+                                   id,
+                                   primaryOutputDevice_l(),
++#ifdef STE_AUDIO
++                                  device,
++                                  inputClientId
++#else
+                                   *pDevices
++#endif
+ #ifdef TEE_SINK
+                                   , teeSink
+ #endif
+@@ -2123,6 +2205,12 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
          if (pFormat != NULL) *pFormat = config.format;
          if (pChannelMask != NULL) *pChannelMask = reqChannels;
  
@@ -1284,7 +1378,7 @@ index 84e2498..9e0fe04 100644
          // notify client processes of the new input creation
          thread->audioConfigChanged_l(AudioSystem::INPUT_OPENED);
          return id;
-@@ -2131,10 +2211,45 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
+@@ -2131,10 +2219,45 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
      return 0;
  }
  
@@ -1299,7 +1393,7 @@ index 84e2498..9e0fe04 100644
 +    sp <RecordThread> thread;
 +    thread = checkRecordThread_l(input);
 +    if (thread != NULL) {
-+       // stream = thread->getInput();
++        stream = thread->getInput();
 +    }
 +    if (inputClientId == NULL) {
 +        if (thread == NULL) {
@@ -1427,7 +1521,7 @@ index 399dba5..6d00e78 100644
                                          audio_channel_mask_t *pChannelMask,
 +#ifdef STE_AUDIO
 +                                        audio_in_acoustics_t acoustics,
-+			                                        audio_input_clients *inputClientId)
++			                    audio_input_clients *inputClientId)
 +#else
                                          audio_in_acoustics_t acoustics)
 +#endif
@@ -1506,3 +1600,117 @@ index 35cf368..4931d8c 100644
      virtual status_t startInput(audio_io_handle_t input);
      virtual status_t stopInput(audio_io_handle_t input);
      virtual void releaseInput(audio_io_handle_t input);
+diff --git a/frameworks/av/services/audioflinger/Effects.h b/frameworks/av/services/audioflinger/Effects.h
+index 58f3ddc..cefe37b 100644
+--- a/frameworks/av/services/audioflinger/Effects.h
++++ b/frameworks/av/services/audioflinger/Effects.h
+@@ -220,6 +220,10 @@ protected:
+     EffectHandle(const EffectHandle&);
+     EffectHandle& operator =(const EffectHandle&);
+
++#ifdef STE_AUDIO
++    Mutex               mLock;          // mutex protecting mEffect pointer
++#endif
++
+     sp<EffectModule> mEffect;           // pointer to controlled EffectModule
+     sp<IEffectClient> mEffectClient;    // callback interface for client notifications
+     /*const*/ sp<Client> mClient;       // client for shared memory allocation, see disconnect()
+diff --git a/frameworks/av/services/audioflinger/Threads.cpp b/frameworks/av/services/audioflinger/Threads.cpp
+index f4d4bc8..604dc21 100644
+--- a/frameworks/av/services/audioflinger/Threads.cpp
++++ b/frameworks/av/services/audioflinger/Threads.cpp
+@@ -1480,6 +1480,9 @@ void AudioFlinger::PlaybackThread::audioConfigChanged_l(int event, int param) {
+         break;
+
+     case AudioSystem::STREAM_CONFIG_CHANGED:
++#ifdef STE_AUDIO
++    case AudioSystem::SINK_LATENCY_CHANGED:
++#endif
+         param2 = &param;
+     case AudioSystem::OUTPUT_CLOSED:
+     default:
+@@ -3096,6 +3099,12 @@ bool AudioFlinger::MixerThread::checkForNewParameters_l()
+             }
+         }
+
++#ifdef STE_AUDIO
++        if (param.getInt(String8(AudioParameter::keySinkLatency), value) == NO_ERROR) {
++            sendIoConfigEvent_l(AudioSystem::SINK_LATENCY_CHANGED, value);
++        }
++#endif
++
+         if (status == NO_ERROR) {
+             status = mOutput->stream->common.set_parameters(&mOutput->stream->common,
+                                                     keyValuePair.string());
+@@ -3679,7 +3688,12 @@ AudioFlinger::RecordThread::RecordThread(const sp<AudioFlinger>& audioFlinger,
+                                          audio_channel_mask_t channelMask,
+                                          audio_io_handle_t id,
+                                          audio_devices_t outDevice,
++#ifdef STE_AUDIO
++                                         audio_devices_t inDevice,
++                                         audio_input_clients pInputClientId
++#else
+                                          audio_devices_t inDevice
++#endif
+ #ifdef TEE_SINK
+                                          , const sp<NBAIO_Sink>& teeSink
+ #endif
+@@ -3696,7 +3710,9 @@ AudioFlinger::RecordThread::RecordThread(const sp<AudioFlinger>& audioFlinger,
+ #endif
+ {
+     snprintf(mName, kNameLength, "AudioIn_%X", id);
+-
++#ifdef STE_AUDIO
++    mInputClientId = pInputClientId;
++#endif
+     readInputParameters();
+
+ }
+@@ -4543,6 +4559,12 @@ KeyedVector<int, bool> AudioFlinger::RecordThread::sessionIds() const
+     return ids;
+ }
+
++AudioFlinger::AudioStreamIn* AudioFlinger::RecordThread::getInput() const
++{
++    Mutex::Autolock _l(mLock);
++    return mInput;
++}
++
+ AudioFlinger::AudioStreamIn* AudioFlinger::RecordThread::clearInput()
+ {
+     Mutex::Autolock _l(mLock);
+diff --git a/frameworks/av/services/audioflinger/Threads.h b/frameworks/av/services/audioflinger/Threads.h
+index c9de0a2..de0f8fd 100644
+--- a/frameworks/av/services/audioflinger/Threads.h
++++ b/frameworks/av/services/audioflinger/Threads.h
+@@ -713,7 +713,12 @@ public:
+                     audio_channel_mask_t channelMask,
+                     audio_io_handle_t id,
+                     audio_devices_t outDevice,
++#ifdef STE_AUDIO
++                    audio_devices_t inDevice,
++                    audio_input_clients pinputClientId
++#else
+                     audio_devices_t inDevice
++#endif
+ #ifdef TEE_SINK
+                     , const sp<NBAIO_Sink>& teeSink
+ #endif
+@@ -755,6 +760,7 @@ public:
+             bool        stop_l(RecordTrack* recordTrack);
+
+             void        dump(int fd, const Vector<String16>& args);
++            AudioStreamIn* getInput() const;
+             AudioStreamIn* clearInput();
+             virtual audio_stream_t* stream() const;
+
+@@ -806,6 +812,9 @@ private:
+             const uint32_t                      mReqChannelCount;
+             const uint32_t                      mReqSampleRate;
+             ssize_t                             mBytesRead;
++#ifdef STE_AUDIO
++            audio_input_clients                 mInputClientId;
++#endif
+             // sync event triggering actual audio capture. Frames read before this event will
+             // be dropped and therefore not read by the application.
+             sp<SyncEvent>                       mSyncStartEvent;
