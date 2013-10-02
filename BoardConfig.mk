@@ -82,7 +82,10 @@ TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT := device/sony/nypon/releasetools/semc
 BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/sony/nypon/recovery/recovery-keys.c
 BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_10x18.h\"
 
-BOARD_UMS_LUNFILE := "/sys/devices/platform/musb-ux500.0/musb-hdrc/gadget/lun0/file"
+#CWM recovery fix
+TARGET_RECOVERY_FSTAB = device/sony/nypon/config/root/fstab.st-ericsson
+RECOVERY_FSTAB_VERSION := 2
+
 TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/devices/platform/musb-ux500.0/musb-hdrc/gadget/lun%d/file"
 
 # Kernel information
