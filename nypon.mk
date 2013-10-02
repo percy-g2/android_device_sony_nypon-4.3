@@ -222,10 +222,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/config/media_profiles.xml:system/etc/media_profiles.xml
 
-# Recovery bootstrap (device-specific part)
-PRODUCT_COPY_FILES += \
-   $(LOCAL_PATH)/recovery.fstab:root/recovery.fstab
-
 # Key layouts and touchscreen
 PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/config/AB8500_Hs_Button.kl:system/usr/keylayout/AB8500_Hs_Button.kl \
