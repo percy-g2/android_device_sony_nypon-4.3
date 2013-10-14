@@ -242,10 +242,6 @@ PRODUCT_COPY_FILES += \
 # Barometar permissions
 PRODUCT_COPY_FILES += \
    frameworks/native/data/etc/android.hardware.sensor.barometer.xml:system/etc/permissions/android.hardware.sensor.barometer.xml
-
-# Bootanimation
-PRODUCT_COPY_FILES += \
-   $(LOCAL_PATH)/prebuilt/bootanimation.zip:system/media/bootanimation.zip
    
    
 # NFC Support
@@ -271,6 +267,11 @@ PRODUCT_COPY_FILES += \
 # patched JB cn_binary needed for mobile network for CM10.2 only
 PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/prebuilt/cn_server:system/bin/cn_server
+   
+   
+# TWRP
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/config/root/twrp.fstab:recovery/root/etc/twrp.fstab
 
 # Copy the Bluetooth permissions file. The permissions file also enables Bluetooth menu in Settings?
 PRODUCT_COPY_FILES += \
