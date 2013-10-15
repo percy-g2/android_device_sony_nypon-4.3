@@ -270,8 +270,8 @@ PRODUCT_COPY_FILES += \
    
    
 # TWRP
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/config/root/twrp.fstab:recovery/root/etc/twrp.fstab
+#PRODUCT_COPY_FILES += \
+#$(LOCAL_PATH)/config/root/twrp.fstab:recovery/root/etc/twrp.fstab
 
 # Copy the Bluetooth permissions file. The permissions file also enables Bluetooth menu in Settings?
 PRODUCT_COPY_FILES += \
