@@ -1,2 +1,2 @@
-add_lunch_combo custom_nypon-userdebug
-add_lunch_combo custom_nypon-eng
+add_lunch_combo omni_nypon-userdebug
+add_lunch_combo omni_nypon-eng
