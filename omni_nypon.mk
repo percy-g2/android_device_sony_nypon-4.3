@@ -29,7 +29,7 @@ $(call inherit-product, vendor/omni/config/common.mk)
 # Inherit from hardware-specific part of the product configuration
 $(call inherit-product, device/sony/nypon/full_nypon.mk)
 
-PRODUCT_NAME := custom_nypon
+PRODUCT_NAME := omni_nypon
 PRODUCT_DEVICE := nypon
 PRODUCT_BRAND := sony
 PRODUCT_MODEL := Xperia P
