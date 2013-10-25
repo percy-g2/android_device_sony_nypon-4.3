@@ -31,12 +31,6 @@ int device_handle_key(int key_code, int visible) {
     
     if (visible) {
         
-        if (!buttonlight) {
-            __system("/sbin/echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/button-backlight/brightness");
-
-            buttonlight = 1;
-        }
-        
         switch (key_code) {
             case KEY_CAPSLOCK:
             case KEY_DOWN:
