@@ -259,6 +259,11 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/com.android.nfc_extras.xml:system/etc/permissions/com.android.nfc_extras.xml
 
+
+# Device specific sysmon_monitor conf
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/prebuilt/sysmon.cfg:system/etc/sysmon.cfg
+ 
 # NFCEE access control
 ifeq ($(TARGET_BUILD_VARIANT),user)
     NFCEE_ACCESS_PATH := $(LOCAL_PATH)/config/nfcee_access.xml
