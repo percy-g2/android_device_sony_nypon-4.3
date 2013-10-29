@@ -19,6 +19,7 @@ bin/simd
 bin/simpbd
 bin/sms_server
 bin/startupflag
+bin/system_monitor
 bin/ste_mad
 bin/ste_omxil_test
 bin/ste-adm-test
@@ -173,12 +174,19 @@ lib/libstecom.so
 lib/libstelpcutils.so
 lib/libsterc.so
 lib/libsys-utils.so
+lib/libsysmon.so
+lib/libsysmon_idd.so
+lib/libsysmon_jni.so
 lib/libta.so
 lib/libtee.so
 lib/libtrace.so
 lib/libu300-parser.so
 lib/libu300-ril.so
 lib/libUMP.so
+lib/sysmon/
+lib/sysmon/
+lib/sysmon/
+lib/sysmon/
 lib/ste_omxcomponents/libst_omxarmivproc.so
 lib/ste_omxcomponents/libst_omxface_detector.so
 lib/ste_omxcomponents/libst_omxnorcos.so
