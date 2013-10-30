@@ -1,3 +1,4 @@
+app/HdmiService.apk
 bin/admsrv
 bin/at_core
 bin/blue-up.sh
@@ -12,7 +13,7 @@ bin/modem_log_relay
 bin/modemcatcher
 bin/modem-supervisor
 bin/msa
-bin/illumination_service
+#bin/illumination_service
 bin/psccd
 bin/rfhal_export
 bin/simd
@@ -27,6 +28,8 @@ bin/stercd
 bin/suntrold
 bin/ta_reader
 bin/tad
+bin/hdmiproxyd
+bin/hdmi_service_st
 bin/taimport
 bin/updatemiscta
 bin/usbid_init.sh
@@ -85,6 +88,8 @@ etc/psdata/sterc_script_connect_alt
 etc/psdata/sterc_script_connect_dun
 etc/psdata/sterc_script_disconnect
 etc/psdata/sterc_script_disconnect_dun
+etc/permissions/com.sonyericsson.privateapis.xml
+framework/com.sonyericsson.privateapis_impl.jar
 lib/egl/libEGL_mali.so
 lib/egl/libGLESv1_CM_mali.so
 lib/egl/libGLESv2_mali.so
@@ -96,7 +101,9 @@ lib/hw/gps.montblanc.so
 lib/hw/gralloc.montblanc.so
 lib/hw/hwcomposer.montblanc.so
 lib/hw/sensors.default.so
-lib/hw/lights.st-ericsson.so
+lib/hw/nfc.montblanc.so
+lib/hw/hdmi.default.so
+#lib/hw/lights.st-ericsson.so
 lib/lib_asb_tee.so
 lib/libals.so
 lib/libarchive.so
@@ -120,6 +127,8 @@ lib/libclientgps.so
 lib/libcn.so
 lib/libcops.so
 lib/libface.so
+lib/libhdmi_service.so
+lib/libhdmiservicejni.so
 lib/libidd.so
 lib/libiddjni.so
 lib/libisimessage.so
