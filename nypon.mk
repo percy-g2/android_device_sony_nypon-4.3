@@ -49,7 +49,6 @@ PRODUCT_COPY_FILES += \
     device/sony/nypon/config/egl.cfg:system/lib/egl/egl.cfg \
     device/sony/nypon/config/asound.conf:system/etc/asound.conf \
     device/sony/nypon/config/dbus.conf:system/etc/dbus.conf \
-    device/sony/nypon/config/sysmon.cfg:system/etc/sysmon.cfg \
     device/sony/nypon/config/hostapd.conf:system/etc/wifi/hostapd.conf \
     device/sony/nypon/config/init.d/01stesetup:system/etc/init.d/01stesetup \
     device/sony/nypon/config/init.d/10dhcpcd:system/etc/init.d/10dhcpcd \
