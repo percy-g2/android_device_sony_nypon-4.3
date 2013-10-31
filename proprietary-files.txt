@@ -13,7 +13,6 @@ bin/modem_log_relay
 bin/modemcatcher
 bin/modem-supervisor
 bin/msa
-#bin/illumination_service
 bin/psccd
 bin/rfhal_export
 bin/simd
@@ -103,7 +102,6 @@ lib/hw/hwcomposer.montblanc.so
 lib/hw/sensors.default.so
 lib/hw/nfc.montblanc.so
 lib/hw/hdmi.default.so
-#lib/hw/lights.st-ericsson.so
 lib/lib_asb_tee.so
 lib/libals.so
 lib/libarchive.so
