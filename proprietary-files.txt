@@ -589,5 +589,7 @@ vendor/camera/SOI08BN1.dat
 vendor/camera/KMO08BN0_BU6456.dat
 vendor/camera/APT00YP1.dat
 vendor/camera/product.dat
+vendor/firmware/libpn544_fw_c2.so
+vendor/firmware/libpn544_fw_c3.so
 xbin/ste-cg29xx_ctrl
 xbin/watchdog-kicker
