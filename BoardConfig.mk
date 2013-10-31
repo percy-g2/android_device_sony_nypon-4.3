@@ -70,7 +70,7 @@ COMMON_GLOBAL_CFLAGS += -DEGL_NEEDS_FNW
 #COMMON_GLOBAL_CFLAGS += -DSTE_FM
 
 # Lights
-#TARGET_PROVIDES_LIBLIGHTS := true
+TARGET_PROVIDES_LIBLIGHTS := true
 
 # ril implementation
 BOARD_RIL_CLASS := ../../../device/sony/nypon/telephony-common/
