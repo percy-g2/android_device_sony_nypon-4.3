@@ -13,6 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-$(call inherit-product, device/sony/nyon/full_nypon.mk)
+$(call inherit-product, device/sony/nypon/full_nypon.mk)
 
 PRODUCT_NAME := aosp_nypon
