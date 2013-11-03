@@ -84,8 +84,8 @@ BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/sony/nypon/recovery/recovery-ke
 BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_10x18.h\"
 
 #CWM recovery fix
-TARGET_RECOVERY_FSTAB = device/sony/nypon/config/root/fstab.st-ericsson
-RECOVERY_FSTAB_VERSION := 2
+#TARGET_RECOVERY_FSTAB = device/sony/nypon/config/root/fstab.st-ericsson
+#RECOVERY_FSTAB_VERSION := 2
 
 TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/devices/platform/musb-ux500.0/musb-hdrc/gadget/lun%d/file"
 
@@ -99,9 +99,13 @@ BOARD_KERNEL_PAGESIZE := 2048
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01000000
 
 # TWRP
-#DEVICE_RESOLUTION := 540x960
-#RECOVERY_GRAPHICS_USE_LINELENGTH := true
-#BOARD_HAS_NO_REAL_SDCARD := true
+DEVICE_RESOLUTION := 540x960
+RECOVERY_GRAPHICS_USE_LINELENGTH := true
+BOARD_HAS_NO_REAL_SDCARD := true
+TW_HAS_NO_RECOVERY_PARTITION := true
+TW_FLASH_FROM_STORAGE := true
+
+TARGET_RECOVERY_FSTAB := device/sony/nypon/config/twrp.fstab
 
 # Partition information
 BOARD_VOLD_MAX_PARTITIONS := 16
