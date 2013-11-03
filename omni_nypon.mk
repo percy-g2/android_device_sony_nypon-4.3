@@ -17,11 +17,14 @@
 # Sample: This is where we'd set a backup provider if we had one
 # $(call inherit-product, device/sample/products/backup_overlay.mk)
 
-# Inherit GSM configuration 
+TARGET_SCREEN_HEIGHT := 960
+TARGET_SCREEN_WIDTH  := 540
+
+# Inherit GSM configuration
 $(call inherit-product, vendor/omni/config/gsm.mk)
 
-# Most specific first.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
+# Inherit from the common Open Source product configuration
+$(call inherit-product, $(SRC_TARGET_DIR)/product/aosp_base_telephony.mk)
 
 # Inherit from our custom product configuration
 $(call inherit-product, vendor/omni/config/common.mk)
@@ -40,3 +43,5 @@ PRODUCT_BUILD_PROP_OVERRIDES += PRODUCT_NAME=ST22i_1257-4009 BUILD_FINGERPRINT=S
 
 # Kernel inline build
 TARGET_KERNEL_CONFIG := xperiap_defconfig
+TARGET_VARIANT_CONFIG := xperiap_defconfig
+TARGET_SELINUX_CONFIG := xperiap_defconfig
